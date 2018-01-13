@@ -25,45 +25,35 @@
 package io.github.binaryoverload.jsonmigrate;
 
 import io.github.binaryoverload.JSONConfig;
+import org.junit.Test;
 
-public abstract class JsonMigration {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    private JSONConfig config;
+public class TestDeleteMigration extends JsonMigration{
 
-    public JsonMigration(JSONConfig config) {
-        this.config = config;
+    public TestDeleteMigration() {
+        super(new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
     }
 
-    public abstract void migrate();
-
-    public void reverseMigration() {
+    @Override
+    public void migrate() {
+        deletePath("items.properties");
+        deletePath("date");
     }
 
-    protected JSONConfig getConfig() {
-        return config;
+    @Test
+    public void test() {
+        assertTrue(pathExists("items.properties"));
+        assertTrue(pathExists("date"));
+
+        migrate();
+
+        assertFalse(pathExists("items.properties"));
+        assertFalse(pathExists("date"));
     }
 
-    protected void movePath(String oldPath, String newPath) {
-        if (!config.getElement(oldPath).isPresent()) {
-            throw new IllegalStateException("The element to move does not exist!");
-        }
-        config.set(newPath, config.getElement(oldPath));
-        config.remove(oldPath);
+    public boolean pathExists(String path) {
+        return getConfig().getElement(path).isPresent();
     }
-
-    protected void deletePath(String path) {
-        if (!config.getElement(path).isPresent()) {
-            throw new IllegalStateException("The element to delete does not exist!");
-        }
-        config.remove(path);
-    }
-
-    protected <T1, T2> void changeType(String path, T1 t1, ClassTransformation<T1, T2> transformation) {
-        getConfig().set(path, transformation.transform(t1));
-    }
-
-    protected <T1, T2> void reverseChangeType(String path, T2 t2, ClassTransformation<T1, T2> transformation) {
-        getConfig().set(path, transformation.reverseTransform(t2));
-    }
-
 }

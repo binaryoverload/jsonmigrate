@@ -24,46 +24,10 @@
 
 package io.github.binaryoverload.jsonmigrate;
 
-import io.github.binaryoverload.JSONConfig;
-import org.junit.Test;
+public abstract class ClassTransformation<T1, T2> {
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+    public abstract T2 transform(T1 t2);
 
-public class TestMoveMigration extends JsonMigration {
-
-    public TestMoveMigration() {
-        super(new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
-    }
-
-    @Override
-    public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
-    }
-
-    @Override
-    public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
-    }
-
-    @Test
-    public void test() {
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-
-        migrate();
-
-        assertFalse(pathExists("items.properties.id"));
-        assertTrue(pathExists("items.properties.items"));
-
-        reverseMigration();
-
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-    }
-
-    public boolean pathExists(String path) {
-        return getConfig().getElement(path).isPresent();
-    }
+    public abstract T1 reverseTransform(T2 t1);
 
 }

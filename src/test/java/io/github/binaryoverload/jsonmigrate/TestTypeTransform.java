@@ -27,43 +27,51 @@ package io.github.binaryoverload.jsonmigrate;
 import io.github.binaryoverload.JSONConfig;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TestMoveMigration extends JsonMigration {
+public class TestTypeTransform extends JsonMigration {
 
-    public TestMoveMigration() {
+    public TestTypeTransform() {
         super(new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
     }
 
     @Override
     public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
+        changeType("date", getConfig().getInteger("date").getAsInt(), new StringToIntTransformation());
     }
 
     @Override
     public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
+        reverseChangeType("date", getConfig().getString("date").get(), new StringToIntTransformation());
     }
 
     @Test
     public void test() {
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
+        assertTrue(getConfig().getElement("date").get().isJsonPrimitive());
+        assertTrue(getConfig().getElement("date").get().getAsJsonPrimitive().isNumber());
 
         migrate();
 
-        assertFalse(pathExists("items.properties.id"));
-        assertTrue(pathExists("items.properties.items"));
+        assertTrue(getConfig().getElement("date").get().isJsonPrimitive());
+        assertTrue(getConfig().getElement("date").get().getAsJsonPrimitive().isString());
 
         reverseMigration();
 
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
+        assertTrue(getConfig().getElement("date").get().isJsonPrimitive());
+        assertTrue(getConfig().getElement("date").get().getAsJsonPrimitive().isNumber());
     }
 
-    public boolean pathExists(String path) {
-        return getConfig().getElement(path).isPresent();
+    public class StringToIntTransformation extends ClassTransformation<Integer, String> {
+
+        @Override
+        public String transform(Integer t1) {
+            return String.valueOf(t1);
+        }
+
+        @Override
+        public Integer reverseTransform(String t2) {
+            return Integer.parseInt(t2);
+        }
     }
 
 }
