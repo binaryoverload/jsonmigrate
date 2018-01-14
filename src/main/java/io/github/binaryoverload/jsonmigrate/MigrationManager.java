@@ -24,46 +24,18 @@
 
 package io.github.binaryoverload.jsonmigrate;
 
-import io.github.binaryoverload.JSONConfig;
-import org.junit.Test;
+public interface MigrationManager {
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+    void runMigration(String migrationName) throws MigrationException;
 
-public class TestMoveMigration extends JsonMigration {
+    void runMigrations() throws MigrationException;
 
-    public TestMoveMigration() {
-        super("testmove", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
-    }
+    void reverseMigration(String migrationName) throws MigrationException;
 
-    @Override
-    public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
-    }
+    void reverseMigrations() throws MigrationException;
 
-    @Override
-    public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
-    }
+    void registerMigration(JsonMigration migration);
 
-    @Test
-    public void test() {
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-
-        migrate();
-
-        assertFalse(pathExists("items.properties.id"));
-        assertTrue(pathExists("items.properties.items"));
-
-        reverseMigration();
-
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-    }
-
-    public boolean pathExists(String path) {
-        return getConfig().getElement(path).isPresent();
-    }
+    boolean unregisterMigration(String migrationName);
 
 }

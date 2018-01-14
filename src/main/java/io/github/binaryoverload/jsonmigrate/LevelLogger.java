@@ -24,46 +24,33 @@
 
 package io.github.binaryoverload.jsonmigrate;
 
-import io.github.binaryoverload.JSONConfig;
-import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.event.Level;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.util.HashMap;
+import java.util.Map;
 
-public class TestMoveMigration extends JsonMigration {
+public class LevelLogger {
 
-    public TestMoveMigration() {
-        super("testmove", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
+    private static final Map<Level, LoggingFunction> map;
+
+    static {
+        map = new HashMap<>();
+        map.put(Level.TRACE, (s, l) -> l.trace(s));
+        map.put(Level.DEBUG, (s, l) -> l.debug(s));
+        map.put(Level.INFO, (s, l) -> l.info(s));
+        map.put(Level.WARN, (s, l) -> l.warn(s));
+        map.put(Level.ERROR, (s, l) -> l.error(s));
     }
 
-    @Override
-    public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
+    public static void log(Level level, Logger l, String s) {
+        map.get(level).log(s, l);
     }
 
-    @Override
-    public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
+    @FunctionalInterface
+    private interface LoggingFunction {
+
+        public void log(String arg, Logger l);
     }
-
-    @Test
-    public void test() {
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-
-        migrate();
-
-        assertFalse(pathExists("items.properties.id"));
-        assertTrue(pathExists("items.properties.items"));
-
-        reverseMigration();
-
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-    }
-
-    public boolean pathExists(String path) {
-        return getConfig().getElement(path).isPresent();
-    }
-
 }
+

@@ -30,20 +30,20 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TestMoveMigration extends JsonMigration {
+public class TestCopyMigration extends JsonMigration {
 
-    public TestMoveMigration() {
-        super("testmove", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
+    public TestCopyMigration() {
+        super("testcopy", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
     }
 
     @Override
     public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
+        copyPath("items.properties.id", "items.properties.items");
     }
 
     @Override
     public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
+        deletePath( "items.properties.items");
     }
 
     @Test
@@ -53,7 +53,7 @@ public class TestMoveMigration extends JsonMigration {
 
         migrate();
 
-        assertFalse(pathExists("items.properties.id"));
+        assertTrue(pathExists("items.properties.id"));
         assertTrue(pathExists("items.properties.items"));
 
         reverseMigration();

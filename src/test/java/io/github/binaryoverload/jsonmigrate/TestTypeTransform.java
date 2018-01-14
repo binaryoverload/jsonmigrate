@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class TestTypeTransform extends JsonMigration {
 
     public TestTypeTransform() {
-        super(new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
+        super("testtypetransform", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
     }
 
     @Override

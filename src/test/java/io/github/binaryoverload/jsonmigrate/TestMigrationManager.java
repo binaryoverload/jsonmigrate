@@ -24,46 +24,29 @@
 
 package io.github.binaryoverload.jsonmigrate;
 
-import io.github.binaryoverload.JSONConfig;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
-public class TestMoveMigration extends JsonMigration {
+public class TestMigrationManager {
 
-    public TestMoveMigration() {
-        super("testmove", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
-    }
+    private MigrationManager migrationManager;
 
-    @Override
-    public void migrate() {
-        movePath("items.properties.id", "items.properties.items");
-    }
+    public TestMigrationManager() {
+        migrationManager = new DefaultMigrationManager();
 
-    @Override
-    public void reverseMigration() {
-        movePath("items.properties.items", "items.properties.id");
+        migrationManager.registerMigration(new TestExceptionMigration());
     }
 
     @Test
-    public void test() {
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
-
-        migrate();
-
-        assertFalse(pathExists("items.properties.id"));
-        assertTrue(pathExists("items.properties.items"));
-
-        reverseMigration();
-
-        assertTrue(pathExists("items.properties.id"));
-        assertFalse(pathExists("items.properties.items"));
+    public void testUnsupportedReverse() {
+        try {
+            migrationManager.reverseMigration("test-exception");
+        } catch (MigrationException e) {
+            assertEquals(e.getCause().getClass(), UnsupportedOperationException.class);
+        }
     }
 
-    public boolean pathExists(String path) {
-        return getConfig().getElement(path).isPresent();
-    }
+
 
 }

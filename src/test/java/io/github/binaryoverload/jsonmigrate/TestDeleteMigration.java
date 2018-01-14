@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 public class TestDeleteMigration extends JsonMigration{
 
     public TestDeleteMigration() {
-        super(new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
+        super("testdelete", new JSONConfig(JSONConfig.class.getClassLoader().getResourceAsStream("test.json")));
     }
 
     @Override

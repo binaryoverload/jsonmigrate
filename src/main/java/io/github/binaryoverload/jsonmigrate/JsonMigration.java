@@ -29,14 +29,17 @@ import io.github.binaryoverload.JSONConfig;
 public abstract class JsonMigration {
 
     private JSONConfig config;
+    private String name;
 
-    public JsonMigration(JSONConfig config) {
+    public JsonMigration(String name, JSONConfig config) {
+        this.name = name;
         this.config = config;
     }
 
-    public abstract void migrate();
+    public abstract void migrate() throws MigrationException;
 
-    public void reverseMigration() {
+    public void reverseMigration() throws MigrationException {
+        throw new UnsupportedOperationException();
     }
 
     protected JSONConfig getConfig() {
@@ -51,12 +54,21 @@ public abstract class JsonMigration {
         config.remove(oldPath);
     }
 
+    protected void copyPath(String oldPath, String newPath) {
+        if (!config.getElement(oldPath).isPresent()) {
+            throw new IllegalStateException("The element to copy does not exist!");
+        }
+        config.set(newPath, config.getElement(oldPath));
+    }
+
     protected void deletePath(String path) {
         if (!config.getElement(path).isPresent()) {
             throw new IllegalStateException("The element to delete does not exist!");
         }
         config.remove(path);
     }
+
+
 
     protected <T1, T2> void changeType(String path, T1 t1, ClassTransformation<T1, T2> transformation) {
         getConfig().set(path, transformation.transform(t1));
@@ -66,4 +78,7 @@ public abstract class JsonMigration {
         getConfig().set(path, transformation.reverseTransform(t2));
     }
 
+    public String getName() {
+        return name;
+    }
 }
